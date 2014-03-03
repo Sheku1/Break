@@ -1,0 +1,12 @@
+Para que no se salga del cuadro.. creas tu dumbo...
+dumbo= new Elefante](0,0,imagen)
+int x_pos=(int)(math.random()*( getwidth()-dumbo.getAncho() ) );
+int y_pos=(int)(math.random()*( getheigth
+dumbo.setPosY(y_pos);
+
+Una clase es una descripcion de un grupo de objetos, la clase define como se comportan los objetos.
+	
+
+checa colision.. si choca prendo bandera
+
+en paint.. si la bandera esta prendida.. pinto otra imagen.. sino pinto imagen 1.

@@ -1,0 +1,27 @@
+1.- Si oprime la misma flecha aumenta velocidad
+2.- Si oprime diferente disminuye
+3.- Si cambia de horizontal a vertical o viseversa se regresa a normal
+4.- Nunca parado
+5.- Si choca con pared que suene algo y cambie imagen por un tiempo.
+
+
+
+Arribita del init creas variables 
+En el init inicializas variables
+
+metodo start-- no le muevas
+metodo run-- actualiza() y checa colision() y repinta()
+metodo actualiza()-- hace que se mueva automaticamente y se siga moviendo
+metodo checacolisiones()-- si choca con la pared
+metodo update() -- si no existe una imagen. la crea..
+		-- 
+metodo keypresed() -- direccion 1= arriba, 2=abajo, 3=izquierda, 4=derecha
+metodo paint() -- si el elefante no esta lo dibuja.
+
+*actualmente el elefante choca cuando hace un sonido y se va de regreso
+
+
+
+key pressed es el que hace que se muevan
+
+private bool choco=false; 

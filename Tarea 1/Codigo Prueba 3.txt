@@ -1,0 +1,75 @@
+if(e.getKeyCode() == KeyEvent.VK_UP && direccion==1){
+        contador++;     
+        }
+        if(e.getKeyCode() == KeyEvent.VK_DOWN && direccion==1){
+            direccion=1;
+            contador--;
+        }
+        if(e.getKeyCode() == KeyEvent.VK_LEFT && direccion==1){
+            direccion=3;
+            contador=1;
+        }
+        if(e.getKeyCode() == KeyEvent.VK_RIGHT && direccion==1){
+            direccion=4;
+            contador=1;
+        }
+        if(e.getKeyCode() == KeyEvent.VK_DOWN && direccion==1 && contador==1){
+            direccion=2;
+        }
+        //~~~~~~~~~~~~~~~~~~~~~~~~
+        if(e.getKeyCode() == KeyEvent.VK_DOWN && direccion ==2){
+           contador++;
+        }
+        if(e.getKeyCode() == KeyEvent.VK_UP && direccion ==2){
+            direccion=2;
+            contador--;
+        }
+        if(e.getKeyCode() == KeyEvent.VK_LEFT && direccion==2){
+            direccion=3;
+            contador=1;
+        }
+        if(e.getKeyCode() == KeyEvent.VK_RIGHT && direccion==2){
+            direccion=4;
+            contador=1;
+        }
+        if(e.getKeyCode() == KeyEvent.VK_UP && direccion==2 && contador==1){
+            direccion=1;
+        }
+        //~~~~~~~~~~~~~~~~~~~~+
+          if(e.getKeyCode() == KeyEvent.VK_LEFT && direccion ==3){
+           contador++;
+        }
+        if(e.getKeyCode() == KeyEvent.VK_RIGHT && direccion ==3){
+            direccion=3;
+            contador--;
+        }
+        if(e.getKeyCode() == KeyEvent.VK_UP && direccion==3){
+            direccion=1;
+            contador=1;
+        }
+        if(e.getKeyCode() == KeyEvent.VK_DOWN && direccion==3){
+            direccion=2;
+            contador=1;
+        }
+        if(e.getKeyCode() == KeyEvent.VK_RIGHT && direccion==3 && contador==1){
+            direccion=4;
+        }
+        //~~~~~~~~~~~~~~~
+        if(e.getKeyCode() == KeyEvent.VK_RIGHT && direccion ==4){
+            contador++;
+        }
+        if(e.getKeyCode() == KeyEvent.VK_LEFT && direccion ==4){
+            direccion=4;
+            contador--;
+        }
+        if(e.getKeyCode() == KeyEvent.VK_UP && direccion ==4){
+            direccion=1;
+            contador=1;
+        }
+        if(e.getKeyCode() == KeyEvent.VK_DOWN && direccion ==4){
+            direccion=2;
+            contador=1;
+        }
+        if(e.getKeyCode() == KeyEvent.VK_LEFT && direccion==4 && contador==1){
+            direccion=3;
+        }

@@ -1,0 +1,7 @@
+Instrucciones tarea 2:
+
+Checar velocidades si le vuelve a picar a la flecha, que si choca se vea una imagen diferente y cambie de direccion, nunca para... y asi...
+
+con una variable velocidad
+contador
+boleana en el choque 

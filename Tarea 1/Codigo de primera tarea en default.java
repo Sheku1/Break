@@ -1,0 +1,182 @@
+import java.applet.Applet;
+import java.applet.AudioClip;
+import java.awt.Graphics;
+import java.awt.Image;
+import java.awt.Color;
+import java.awt.Toolkit;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
+import java.net.URL;
+
+
+public class Colisiones extends Applet implements Runnable, KeyListener
+{
+	private static final long serialVersionUID = 1L;
+	// Se declaran las variables.
+	private int direccion;    // Direccion del elefante
+	private int incX;    // Incremento en x
+	private int incY;    // Incremento en y
+	private final int MIN = -5;    //Minimo al generar un numero al azar.
+	private final int MAX = 6;    //Maximo al generar un numero al azar.
+	private Image dbImage;	// Imagen a proyectar	
+	private Graphics dbg;	// Objeto grafico
+	private AudioClip sonido;    // Objeto AudioClip
+	private AudioClip rat;    // Objeto AudioClip
+	private AudioClip bomb;    //Objeto AudioClip 
+	private Elefante dumbo;    // Objeto de la clase Elefante
+	
+	//este es el metodo init, donde se inicializan todas las variables y se crean todos los objetos
+	public void init() {
+	direccion = 4;
+		int posX = (int) (Math.random() *(getWidth() / 4));    // posicion en x es un cuarto del applet
+		int posY = (int) (Math.random() *(getHeight() / 4));    // posicion en y es un cuarto del applet
+		URL eURL = this.getClass().getResource("elefante.gif");
+		dumbo = new Elefante(posX,posY,Toolkit.getDefaultToolkit().getImage(eURL)); // crea el elefante.
+		setBackground (Color.yellow);
+		addKeyListener(this);
+		URL eaURL = this.getClass().getResource("elephant.wav");
+		sonido = getAudioClip (eaURL);
+		URL baURL = this.getClass().getResource("Explosion.wav");
+		bomb = getAudioClip (baURL);
+	}
+	//metodo de la clase applet, se crea e inicializa el hilo, se llama despues del init o al visitar otra pagina y regresar a esta
+	public void start () {
+		// Declaras un hilo
+		Thread th = new Thread (this);
+		// Empieza el hilo
+		th.start ();
+	}
+	
+	//metodo run de la clase applet, se ejecuta el hilo, y es un ciclo infinito donde se incrementa la x o la y dependiendo de la direccion, finalmente se repinta y a dormir
+	public void run () {
+		while (true) {
+			actualiza();
+			checaColision();
+			repaint();    // Se actualiza el <code>Applet</code> repintando el contenido.
+			try	{
+				// El thread se duerme.
+				Thread.sleep (20);
+			}
+			catch (InterruptedException ex)	{
+				System.out.println("Error en " + ex.toString());
+			}
+		}
+	}
+	
+	//metodo actualiza posicion de el elefante.
+	public void actualiza() {
+	    //Dependiendo de la direccion del elefante es hacia donde se mueve.
+		switch(direccion) {
+			case 1: {
+			    dumbo.setPosY(dumbo.getPosY() - 1);
+				break;    //se mueve hacia arriba
+			}
+			case 2: {
+			    dumbo.setPosY(dumbo.getPosY() + 1);
+				break;    //se mueve hacia abajo
+			}
+			case 3: {
+			 	dumbo.setPosX(dumbo.getPosX() - 1);
+				break;    //se mueve hacia izquierda
+			}
+			case 4: {
+			 	dumbo.setPosX(dumbo.getPosX() + 1);
+				break;    //se mueve hacia derecha	
+			}
+		}
+		 // genero un numero al azar en incx e incy de -5 a 5
+		incX = ((int) (Math.random () * (MAX - MIN))) + MIN;
+	    incY = ((int) (Math.random () * (MAX - MIN))) + MIN;
+		
+		}
+		
+		//metodo para checar colisiones del elefante
+		public void checaColision() {
+		//Colision del elefante con el Applet dependiendo a donde se mueve.
+		switch(direccion){
+			case 1: { //se mueve hacia arriba con la flecha arriba.
+				if (dumbo.getPosY() < 0) {
+					direccion = 2;
+					sonido.play();
+				}
+				break;    	
+			}     
+			case 2: { //se mueve hacia abajo con la flecha abajo.   
+				if (dumbo.getPosY() + dumbo.getAlto() > getHeight()) {
+					direccion = 1;
+					sonido.play();
+				}
+				break;    	
+			} 
+			case 3: { //se mueve hacia izquierda con la flecha izquierda.
+				if (dumbo.getPosX() < 0) {
+					direccion = 4;
+					sonido.play();
+				}
+				break;    	
+			}    
+			case 4: { //se mueve hacia derecha con la flecha derecha.
+				if (dumbo.getPosX() + dumbo.getAncho() > getWidth()) {
+					direccion = 3;
+					sonido.play();
+				}
+				break;    	
+			}			
+		}
+	}
+	
+	//metodo update de la clase container, actualiza el contenedor.. y el parametro g es el objeto grafico usado para dibujar.
+		public void update(Graphics g) {
+		// Inicializan el DoubleBuffer
+		if (dbImage == null){
+			dbImage = createImage (this.getSize().width, this.getSize().height);
+			dbg = dbImage.getGraphics ();
+		}
+
+		// Actualiza la imagen de fondo.
+		dbg.setColor(getBackground ());
+		dbg.fillRect(0, 0, this.getSize().width, this.getSize().height);
+
+		// Actualiza el Foreground.
+		dbg.setColor(getForeground());
+		paint(dbg);
+
+		// Dibuja la imagen actualizada
+		g.drawImage (dbImage, 0, 0, this);
+	}
+	
+	//metodo key pressed, de la clase interface.. lo que pasa al presionar cierta tecla... e es el evento al presioanr teclas.
+	public void keyPressed(KeyEvent e) {
+		if (e.getKeyCode() == KeyEvent.VK_UP) {    //Presiono flecha arriba
+			direccion = 1;
+		} else if (e.getKeyCode() == KeyEvent.VK_DOWN) {    //Presiono flecha abajo
+			direccion = 2;
+		} else if (e.getKeyCode() == KeyEvent.VK_LEFT) {    //Presiono flecha izquierda
+			direccion = 3;
+		} else if (e.getKeyCode() == KeyEvent.VK_RIGHT) {    //Presiono flecha derecha
+			direccion = 4;
+		}
+    }
+	
+	//metodo keytyped, de la clase  interface.. que pasa al usar una tecla que no sea de accion.. e es el evento
+	 public void keyTyped(KeyEvent e){
+    	
+    }
+	
+	//metodo keyreleased, de la clase interface, lo que pasa al soltar una tecla... e es el evento al soltar las teclas.
+	public void keyReleased(KeyEvent e){
+    	
+    }
+	
+	//metodo paint, de la clase applet, heredado de la clase container, se dibuja la imagen con la posicion actualizada, y mustra advertencia al generar imagen.
+	public void paint(Graphics g) {
+		if (dumbo != null){
+		//Dibuja la imagen en la posicion actualizada
+			g.drawImage(dumbo.getImagenI(), dumbo.getPosX(),dumbo.getPosY(), this);
+		} else {
+			//Da un mensaje mientras se carga el dibujo	
+			g.drawString("No se cargo la imagen..", 20, 20);
+		}
+	}
+	
+}

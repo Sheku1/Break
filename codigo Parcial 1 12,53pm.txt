@@ -1,0 +1,416 @@
+
+/**
+ * @(#)Colisiones.java
+ *
+ * AppletExamen
+ *
+ * @author David Martinez
+ */
+import java.applet.Applet;
+import java.applet.AudioClip;
+import java.awt.Graphics;
+import java.awt.Image;
+import java.awt.Color;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
+import java.awt.event.MouseMotionListener;
+import java.net.URL;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import javax.swing.ImageIcon;
+import java.util.LinkedList;
+import java.awt.Toolkit;
+
+public class AppletExamen1 extends Applet implements Runnable, KeyListener, MouseListener, MouseMotionListener {
+
+    private static final long serialVersionUID = 1L;
+    // Se declaran las variables.
+
+    private int x1; // posicion del mouse en x
+    private int y1; // posicion del mouse en y
+    //~~~~~~~~~~~~~~~~
+    private int direccion;    // Direccion del elefante
+    private int movilidad; // determinado por vidas
+    private int contador;
+    private int conto;
+    private int incX;    // Incremento en x
+    private int incY;    // Incremento en y
+    // ~~~~~~~~~~~~~~~~
+    private final int MIN = -5;    //Minimo al generar un numero al azar.
+    private final int MAX = 6;    //Maximo al generar un numero al azar.
+    private final int MINI = 9;
+    private final int MAXI = 10;
+    private final int MAXO = 4;
+    private final int MIXO = 1;
+    //~~~~~~~~~~~~~~~~~
+    private Image dbImage;	// Imagen a proyectar	
+    private Image gameover;
+    private Graphics dbg;	// Objeto grafico
+    private AudioClip sonido;    // Objeto AudioClip
+    private AudioClip rat;    // Objeto AudioClip
+    private AudioClip bomb;    //Objeto AudioClip 
+    private Bueno dumbo;    // Objeto de la clase Elefante
+    private Malo raton;    //Objeto de la clase Raton
+    private ImageIcon elefante; // Imagen del elefante.
+    private int posrX;
+    private int posrY;
+    // ~~~~~~~~~~~~~~~~
+    private boolean mueve = false;
+    private boolean pausar = false;
+    private boolean pico = false;
+    // ~~~~~~~~~~~~~~~~
+    private int vidas;
+    private LinkedList lista;
+    // ~~~~~~~~~~~~~~~~
+    //Variables de control de tiempo de la animación
+    private long tiempoActual;
+    private long tiempoInicial;
+
+    /**
+     * Metodo <I>init</I> sobrescrito de la clase <code>Applet</code>.<P>
+     * En este metodo se inizializan las variables o se crean los objetos a
+     * usarse en el <code>Applet</code> y se definen funcionalidades.
+     */
+    @Override
+    public void init() {
+        direccion = 0;
+        vidas = 5;
+        contador = 0;
+        conto = 0;
+        //~~~~~~~~~~~
+
+        int posX = (int) (450);    // posicion en x es un cuarto del applet
+        int posY = (int) (430);    // posicion en y es un cuarto del applet
+        dumbo = new Bueno(posX, posY);
+        // Cargamos texto final.
+        URL noURL = this.getClass().getResource("Images/text.gif");
+        gameover = Toolkit.getDefaultToolkit().getImage(noURL);
+        setBackground(Color.black);
+        addKeyListener(this);
+        addMouseListener(this);
+        addMouseMotionListener(this);
+        this.setSize(1000, 500);
+            //Se cargan los sonidos.
+            /*URL eaURL = this.getClass().getResource("musica/lifeloss.wav");
+         sonido = getAudioClip(eaURL);*/
+        /*URL raURL = this.getClass().getResource("musica/hit.wav");
+         rat = getAudioClip(raURL);
+         URL baURL = this.getClass().getResource("musica/explosion.wav");
+         bomb = getAudioClip(baURL);*/
+        // ~~~~~~~~~~~~~~~~
+        lista = new LinkedList();
+        for (int i = 0; i < 10; i++) {
+            int posrX = (int) (Math.random() * (getWidth()));
+            int posrY = (int) (Math.random() * (getHeight() / 2));
+            //Se cargan las imágenes(cuadros) para la animación
+            raton = new Malo(posrX, posrY);
+            raton.setPosX(posrX);
+            raton.setPosY(posrY);
+            lista.addLast(raton);
+            //inco--;
+        }
+    }
+
+    /**
+     * Metodo <I>start</I> sobrescrito de la clase <code>Applet</code>.<P>
+     * En este metodo se crea e inicializa el hilo para la animacion este metodo
+     * es llamado despues del init o cuando el usuario visita otra pagina y
+     * luego regresa a la pagina en donde esta este <code>Applet</code>
+     *
+     */
+    @Override
+    public void start() {
+        // Declaras un hilo
+        Thread th = new Thread(this);
+        // Empieza el hilo
+        th.start();
+    }
+
+    /**
+     * Metodo <I>run</I> sobrescrito de la clase <code>Thread</code>.<P>
+     * En este metodo se ejecuta el hilo, es un ciclo indefinido donde se
+     * incrementa la posicion en x o y dependiendo de la direccion, finalmente
+     * se repinta el <code>Applet</code> y luego manda a dormir el hilo.
+     *
+     */
+    @Override
+    public void run() {
+        //Guarda el tiempo actual del sistema
+        tiempoActual = System.currentTimeMillis();
+        //Ciclo principal del Applet. Actualiza y despliega en pantalla la animación hasta que el Applet sea cerrado
+        while (vidas > 0) {
+            if (!pausar) {
+                actualiza();
+                checaColision();
+                repaint(); // Se actualiza el <code>Applet</code> repintando el contenido.
+            }
+            try {
+                // El thread se duerme.
+                Thread.sleep(20);
+            } catch (InterruptedException ex) {
+                System.out.println("Error en " + ex.toString());
+            }
+
+        }
+    }
+
+    /**
+     * Metodo usado para actualizar la posicion de objetos elefante y raton.
+     *
+     */
+    public void actualiza() {
+
+        //Determina el tiempo que ha transcurrido desde que el Applet inicio su ejecución
+        long tiempoTranscurrido = System.currentTimeMillis() - tiempoActual;
+        //Guarda el tiempo actual
+        tiempoActual += tiempoTranscurrido;
+        //Actualiza la animación en base al tiempo transcurrido
+        dumbo.actualiza(tiempoTranscurrido);
+        raton.actualiza(tiempoTranscurrido);
+        if (mueve) {
+            switch (direccion) {
+                case 1: {
+                    dumbo.setPosY(dumbo.getPosY() - 3);
+                    break;    //se mueve hacia arriba
+                }
+                case 2: {
+                    dumbo.setPosY(dumbo.getPosY() + 3);
+                    break;    //se mueve hacia abajo
+                }
+                case 3: {
+                    dumbo.setPosX(dumbo.getPosX() - 3);
+                    break;    //se mueve hacia izquierda
+                }
+                case 4: {
+                    dumbo.setPosX(dumbo.getPosX() + 3);
+                    break;    //se mueve hacia derecha	
+                }
+            }
+        }
+        /*if (pico) { // ya declara que es true.
+         dumbo.setPosX(x1 - 30);
+         dumbo.setPosY(y1 - 30);
+         pico = false;
+         }*/
+        movilidad = ((int) (Math.random() * (MAXO - MIXO))) + MIXO;
+        // al meterlo en el ciclo for, todos los asteroides se actualizan.
+        for (int i = 0; i < lista.size(); i++) {
+            Malo raton = (Malo) lista.get(i);
+            incX = ((int) (Math.random() * (MAX - MIN))) + MIN;
+            incY = ((int) (Math.random() * (MAX - MIN))) + MIN;
+
+            if (raton.getPosY() < getHeight()) {
+                raton.setPosY(raton.getPosY() + movilidad);
+            }
+            if (raton.getPosY() == getHeight()) {
+                // si choca con la parte de abajo del applet vuelven a aparecer
+                int posrX = (int) (Math.random() * (getWidth()));
+                int posrY = (int) (Math.random() * (getHeight() / 2));
+                raton.setPosX(posrX);
+                raton.setPosY(posrY);
+                conto++;
+                if (conto == 10) {
+                    vidas--;
+                    conto = 0;
+                }
+                contador = contador + 100;
+
+            }
+            if (raton.getPosX() < 0) {
+                posrX = (int) (Math.random() * (getWidth()));
+                posrY = (int) (Math.random() * (getHeight() / 2));
+                raton.setPosX(posrX);
+                raton.setPosY(posrY);
+            }
+            raton.setPosX(raton.getPosX() + incX);
+            raton.setPosY(raton.getPosY() + incY);
+        }
+    }
+
+    /**
+     * Metodo usado para checar las colisiones del objeto elefante y raton con
+     * las orillas del <code>Applet</code>.
+     */
+    public void checaColision() {
+        // checa colision con el applet para que no se salga.
+        if (dumbo.getPosX() + dumbo.getAncho() > getWidth()) {
+            dumbo.setPosX(getWidth() - dumbo.getAncho());
+        }
+        if (dumbo.getPosX() < 0) {
+            dumbo.setPosX(0);
+        }
+        if (dumbo.getPosY() + dumbo.getAlto() > getHeight()) {
+            dumbo.setPosY(getHeight() - dumbo.getAlto());
+        }
+        if (dumbo.getPosY() < 0) {
+            dumbo.setPosY(0);
+        }
+
+        //Colision entre objetos
+        for (int i = 0; i < lista.size(); i++) {
+            Malo raton = (Malo) lista.get(i);
+            if (dumbo.intersecta(raton)) {
+                //bomb.play();    //sonido al colisionar
+                int posrX = (int) (Math.random() * (getWidth()));
+                int posrY = (int) (Math.random() * (getHeight() / 2));
+                raton.setPosX(posrX);
+                raton.setPosY(posrY);
+                if (contador > 0) {
+                    contador = contador - 20;
+                }
+            }
+        }
+    }
+
+    /**
+     * Metodo <I>update</I> sobrescrito de la clase <code>Applet</code>,
+     * heredado de la clase Container.<P>
+     * En este metodo lo que hace es actualizar el contenedor
+     *
+     * @param g es el <code>objeto grafico</code> usado para dibujar.
+     */
+    @Override
+    public void update(Graphics g) {
+        // Inicializan el DoubleBuffer
+        if (dbImage == null) {
+            dbImage = createImage(this.getSize().width, this.getSize().height);
+            dbg = dbImage.getGraphics();
+        }
+
+        // Actualiza la imagen de fondo.
+        dbg.setColor(getBackground());
+        dbg.fillRect(0, 0, this.getSize().width, this.getSize().height);
+
+        // Actualiza el Foreground.
+        dbg.setColor(getForeground());
+        paint(dbg);
+
+        // Dibuja la imagen actualizada
+        g.drawImage(dbImage, 0, 0, this);
+    }
+
+    /**
+     * Metodo <I>keyPressed</I> sobrescrito de la interface
+     * <code>KeyListener</code>.<P>
+     * En este metodo maneja el evento que se genera al presionar cualquier la
+     * tecla.
+     *
+     * @param e es el <code>evento</code> generado al presionar las teclas.
+     */
+    @Override
+    public void keyPressed(KeyEvent e) {
+
+        if (e.getKeyCode() == KeyEvent.VK_LEFT) {
+            direccion = 3;
+            mueve = true;
+
+        } else if (e.getKeyCode() == KeyEvent.VK_RIGHT) {
+            direccion = 4;
+            mueve = true;
+        } else if (e.getKeyCode() == KeyEvent.VK_P) {
+            pausar = !pausar;
+        }
+
+    }
+
+    /**
+     * Metodo <I>keyTyped</I> sobrescrito de la interface
+     * <code>KeyListener</code>.<P>
+     * En este metodo maneja el evento que se genera al presionar una tecla que
+     * no es de accion.
+     *
+     * @param e es el <code>evento</code> que se genera en al presionar las
+     * teclas.
+     */
+    @Override
+    public void keyTyped(KeyEvent e) {
+
+    }
+
+    /**
+     * Metodo <I>keyReleased</I> sobrescrito de la interface
+     * <code>KeyListener</code>.<P>
+     * En este metodo maneja el evento que se genera al soltar la tecla
+     * presionada.
+     *
+     * @param e es el <code>evento</code> que se genera en al soltar las teclas.
+     */
+    @Override
+    public void keyReleased(KeyEvent e) {
+        direccion = 0;
+    }
+
+    /**
+     * Metodo <I>paint</I> sobrescrito de la clase <code>Applet</code>, heredado
+     * de la clase Container.<P>
+     * En este metodo se dibuja la imagen con la posicion actualizada, ademas
+     * que cuando la imagen es cargada te despliega una advertencia.
+     *
+     * @param g es el <code>objeto grafico</code> usado para dibujar.
+     */
+    @Override
+    public void paint(Graphics g) {
+        if (vidas > 0) {
+            if (dumbo != null && lista != null) {
+                //Dibuja la imagen en la posicion actualizada
+                g.drawImage(dumbo.getImagenI(), dumbo.getPosX(), dumbo.getPosY(), this);
+
+                g.setColor(Color.white);
+                g.drawString(" Puntaje = " + contador, 10, 10);
+                g.drawString(" Vidas = " + vidas, 10, 30);
+                if (pausar) {
+                    g.setColor(Color.white);
+                    //g.drawString(Bueno.getPAUSADO(), 500, 250);
+                    g.drawString(dumbo.getPAUSADO(), dumbo.getPosX() + dumbo.getAncho() / 3, dumbo.getPosY() + dumbo.getAlto() / 2);
+                }
+                for (int i = 0; i < lista.size(); i++) {
+                    Malo raton = (Malo) lista.get(i);
+                    g.drawImage(raton.getImagenI(), raton.getPosX(), raton.getPosY(), this);
+                }
+            } else {
+                //Da un mensaje mientras se carga el dibujo	
+                g.drawString("No se cargo la imagen..", 20, 20);
+            }
+
+        } else {
+            g.drawImage(gameover, 400, 150, this);
+        }
+    }
+
+    @Override
+    public void mouseClicked(MouseEvent e) {
+    }
+
+    @Override
+    public void mouseEntered(MouseEvent e) {
+    }
+
+    @Override
+    public void mouseExited(MouseEvent e) {
+    }
+
+    @Override
+    public void mousePressed(MouseEvent e) {
+
+    }
+
+    @Override
+    public void mouseReleased(MouseEvent e) {
+    }
+
+    @Override
+    public void mouseMoved(MouseEvent e) {
+    }
+
+    @Override
+    public void mouseDragged(MouseEvent e) {
+        x1 = e.getX();//agarras la x del mouse
+        y1 = e.getY();
+        if (dumbo.contiene(x1, y1)) {
+            pico = true;
+
+        }
+    }
+
+}
+
